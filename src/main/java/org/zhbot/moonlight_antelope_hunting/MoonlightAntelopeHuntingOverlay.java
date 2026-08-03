@@ -113,9 +113,23 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
 
             for (var pit : plugin.getPitGameObjects())
             {
+                var colour = pitColour;
                 var varbitId = PITFALL_VARBIT_MAP.get(pit.getId());
-                var trapped = varbitId != null && client.getVarbitValue(varbitId) != 0;
-                renderObject(graphics, pit, trapped ? config.pitfallTrappedColour() : pitColour);
+                if (varbitId != null)
+                {
+                    switch (client.getVarbitValue(varbitId))
+                    {
+                        case 1:
+                        case 2:
+                            colour = config.pitfallTrappedColour();
+                            break;
+                        case 3:
+                        case 4:
+                            colour = config.pitfallCaughtColour();
+                            break;
+                    }
+                }
+                renderObject(graphics, pit, colour);
             }
         }
 

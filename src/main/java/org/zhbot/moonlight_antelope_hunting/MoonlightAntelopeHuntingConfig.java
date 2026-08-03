@@ -125,6 +125,19 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 		return new Color(0, 255, 255, 50);
 	}
 
+	@Alpha
+	@ConfigItem(
+			keyName = "pitfallCaughtColour",
+			name = "Caught Colour",
+			description = "Pitfall overlay colour when caught",
+			section = pitfallSection,
+			position = 4
+	)
+	default Color pitfallCaughtColour()
+	{
+		return new Color(255, 0, 255, 50);
+	}
+
 	@ConfigSection(
 			name = "Antelopes",
 			description = "Antelope settings",

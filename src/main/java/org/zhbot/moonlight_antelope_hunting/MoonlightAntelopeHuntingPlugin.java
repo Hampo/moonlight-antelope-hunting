@@ -69,7 +69,7 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	private final List<DeadNPC> deadNPCs = new ArrayList<>();
 
 	private final Set<Integer> fallingNPCs = new HashSet<>();
-	private final Map<Integer, WorldPoint> spawnLocations = new HashMap<>();
+	private final Map<Integer, Map<WorldPoint, Integer>> spawnFrequencies = new HashMap<>();
 
 	@Getter
 	private final Map<Integer, Integer> logCounts = new HashMap<>();
@@ -92,7 +92,7 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 
 		activeNPCs.clear();
 		deadNPCs.clear();
-		spawnLocations.clear();
+		spawnFrequencies.clear();
 
 		logCounts.clear();
 	}
@@ -159,7 +159,9 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 
 		activeNPCs.add(npc);
 		var index = npc.getIndex();
-		spawnLocations.putIfAbsent(index, npc.getWorldLocation());
+
+        var counts = spawnFrequencies.computeIfAbsent(index, k -> new HashMap<>());
+		counts.merge(npc.getWorldLocation(), 1, Integer::sum);
 
 		deadNPCs.removeIf(deadNPC -> deadNPC.getIndex() == index);
 	}
@@ -193,10 +195,9 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 			return;
 		fallingNPCs.remove(index);
 
-		var spawnTile = spawnLocations.get(npc.getIndex());
+		var spawnTile = getMostCommonSpawnTile(index);
 		if (spawnTile == null)
 			return;
-		spawnLocations.remove(npc.getIndex());
 
 		deadNPCs.add(new DeadNPC(index, spawnTile, client.getTickCount() + ANTELOPE_RESPAWN_TIME));
 	}
@@ -231,5 +232,29 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	public boolean inHunterArea(WorldPoint point)
 	{
 		return point.distanceTo(CENTER) <= DISTANCE;
+	}
+
+	private WorldPoint getMostCommonSpawnTile(int index)
+	{
+		var counts = spawnFrequencies.get(index);
+		if (counts == null || counts.isEmpty())
+			return null;
+
+		WorldPoint mostCommon = null;
+		var highestCount = 0;
+
+		for (var entry : counts.entrySet())
+		{
+			if (entry.getValue() > highestCount)
+			{
+				highestCount = entry.getValue();
+				mostCommon = entry.getKey();
+			}
+		}
+
+		if (highestCount <= 1)
+			return null;
+
+		return mostCommon;
 	}
 }

@@ -184,11 +184,24 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 
 	@Alpha
 	@ConfigItem(
+			keyName = "antelopesTauntedColour",
+			name = "Taunted Colour",
+			description = "Antelope taunted overlay colour",
+			section = antelopesSection,
+			position = 3
+	)
+	default Color antelopesTauntedColour()
+	{
+		return new Color(255, 0, 255, 50);
+	}
+
+	@Alpha
+	@ConfigItem(
 			keyName = "antelopesRespawnColour",
 			name = "Respawn Colour",
 			description = "Respawn tile colour",
 			section = antelopesSection,
-			position = 3
+			position = 4
 	)
 	default Color antelopesRespawnColour()
 	{

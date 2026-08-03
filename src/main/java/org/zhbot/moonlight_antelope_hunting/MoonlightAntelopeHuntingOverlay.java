@@ -128,12 +128,14 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
 
         if (config.antelopesEnabled())
         {
+            var localPlayer = client.getLocalPlayer();
             for (var npc : plugin.getActiveNPCs())
             {
+                var colour = npc.getInteracting() == localPlayer ? config.antelopesTauntedColour() : config.antelopesColour();
                 if (config.antelopesRenderMode().isShowHull())
-                    renderNPC(graphics, npc, config.antelopesColour());
+                    renderNPC(graphics, npc, colour);
                 if (config.antelopesRenderMode().isShowTile())
-                    renderTile(graphics, npc, config.antelopesColour());
+                    renderTile(graphics, npc, colour);
             }
 
             var currentTick = client.getTickCount();

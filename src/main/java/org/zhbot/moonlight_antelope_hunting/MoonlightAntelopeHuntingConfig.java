@@ -209,9 +209,66 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 	}
 
 	@ConfigSection(
+			name = "Inventory",
+			description = "Inventory settings",
+			position = 3
+	)
+	String inventorySection = "inventorySection";
+
+	@ConfigItem(
+			keyName = "inventoryChiselEnabled",
+			name = "Highlight Chisel",
+			description = "Enable chisel overlay",
+			section = inventorySection,
+			position = 0
+	)
+	default boolean inventoryChiselEnabled()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "inventoryChiselColour",
+			name = "Chisel Colour",
+			description = "Chisel overlay colour in inventory",
+			section = inventorySection,
+			position = 1
+	)
+	default Color inventoryChiselColour()
+	{
+		return new Color(0, 255, 0, 50);
+	}
+
+	@ConfigItem(
+			keyName = "inventoryHornEnabled",
+			name = "Highlight Horn",
+			description = "Enable horn overlay",
+			section = inventorySection,
+			position = 2
+	)
+	default boolean inventoryHornEnabled()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "inventoryHornColour",
+			name = "Horn Colour",
+			description = "Horn overlay colour in inventory",
+			section = inventorySection,
+			position = 3
+	)
+	default Color inventoryHornColour()
+	{
+		return new Color(0, 255, 255, 50);
+	}
+
+	@ConfigSection(
 			name = "Miscellaneous",
 			description = "Miscellaneous settings",
-			position = 3
+			position = 4
 	)
 	String miscellaneousSection = "miscellaneousSection";
 

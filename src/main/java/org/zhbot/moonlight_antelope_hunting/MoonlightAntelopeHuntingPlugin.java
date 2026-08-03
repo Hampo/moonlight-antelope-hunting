@@ -53,6 +53,9 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	@Inject
 	private MoonlightAntelopeHuntingOverlay overlay;
 
+	@Inject
+	private MoonlightAntelopeHuntingInventoryOverlay inventoryOverlay;
+
 	@Getter
 	private final List<GameObject> rootGameObjects = new ArrayList<>();
 
@@ -75,12 +78,14 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		overlayManager.add(overlay);
+		overlayManager.add(inventoryOverlay);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(overlay);
+		overlayManager.remove(inventoryOverlay);
 
 		rootGameObjects.clear();
 		pitGameObjects.clear();

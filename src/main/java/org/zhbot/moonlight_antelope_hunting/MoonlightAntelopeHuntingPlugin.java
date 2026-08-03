@@ -6,8 +6,10 @@ import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
+import net.runelite.api.coords.WorldArea;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.api.gameval.*;
 import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
@@ -18,6 +20,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.Text;
 
 import java.util.*;
 
@@ -40,6 +43,13 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 			net.runelite.api.gameval.ItemID.YEW_LOGS,
 			ItemID.MAGIC_LOGS
 	);
+
+	private static final int[] PITFALL_ANIM_IDS = {
+			SpotanimID.HUNTING_PITFALL_COLLAPSE_0,
+			SpotanimID.HUNTING_PITFALL_COLLAPSE_1,
+			SpotanimID.HUNTING_PITFALL_COLLAPSE_2,
+			SpotanimID.HUNTING_PITFALL_COLLAPSE_3
+	};
 
 	@Inject
 	private Client client;
@@ -214,6 +224,26 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 			logCounts.put(logId, inventory.count(logId));
 	}
 
+	@Subscribe
+	public void onMenuEntryAdded(MenuEntryAdded event)
+	{
+		if (!config.antelopesRemoveTease())
+			return;
+
+		var option = Text.removeTags(event.getOption());
+		if (!option.equals("Tease"))
+			return;
+
+		var entry = event.getMenuEntry();
+		var npc = entry.getNpc();
+		if (npc == null || npc.getId() != NpcID.MOONLIGHT_ANTELOPE)
+			return;
+
+		if (isCaught(npc))
+			client.getMenu().removeMenuEntry(entry);
+
+	}
+
 	@Provides
 	MoonlightAntelopeHuntingConfig provideConfig(ConfigManager configManager)
 	{
@@ -256,5 +286,31 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 			return null;
 
 		return mostCommon;
+	}
+
+	public boolean isCaught(NPC npc)
+	{
+		for (int id : PITFALL_ANIM_IDS)
+			if (npc.hasSpotAnim(id))
+				return true;
+
+		var interacting = npc.getInteracting();
+		if (interacting != null && interacting != client.getLocalPlayer())
+			return true;
+
+		var npcArea = npc.getWorldArea();
+		if (npcArea != null)
+		{
+			for (var pit : pitGameObjects)
+			{
+				var pitLocation = pit.getWorldLocation();
+				var pitArea = new WorldArea(pitLocation.getX(), pitLocation.getY(), pit.sizeX(), pit.sizeY(), pitLocation.getPlane());
+
+				if (npcArea.intersectsWith(pitArea))
+					return true;
+			}
+		}
+
+		return false;
 	}
 }

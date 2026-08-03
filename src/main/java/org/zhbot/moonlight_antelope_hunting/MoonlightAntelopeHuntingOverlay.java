@@ -3,10 +3,10 @@ package org.zhbot.moonlight_antelope_hunting;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.gameval.*;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.ObjectID;
-import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -132,11 +132,17 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
             var localPlayer = client.getLocalPlayer();
             for (var npc : plugin.getActiveNPCs())
             {
+                if (plugin.isCaught(npc))
+                    continue;
+
                 var colour = npc.getInteracting() == localPlayer ? config.antelopesTauntedColour() : config.antelopesColour();
+
                 if (config.antelopesRenderMode().isShowHull())
                     renderNPC(graphics, npc, colour);
+
                 if (config.antelopesRenderMode().isShowTile())
                     renderTile(graphics, npc, colour);
+
             }
 
             var currentTick = client.getTickCount();

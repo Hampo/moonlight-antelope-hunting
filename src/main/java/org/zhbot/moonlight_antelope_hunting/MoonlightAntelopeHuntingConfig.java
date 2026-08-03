@@ -18,7 +18,7 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 
 	@ConfigItem(
 			keyName = "rootsEnabled",
-			name = "Enabled",
+			name = "Overlay Enabled",
 			description = "Enable roots overlay",
 			section = rootsSection,
 			position = 0
@@ -76,7 +76,7 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 
 	@ConfigItem(
 			keyName = "pitfallEnabled",
-			name = "Enabled",
+			name = "Overlay Enabled",
 			description = "Enable pitfall overlay",
 			section = pitfallSection,
 			position = 0
@@ -147,7 +147,7 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 
 	@ConfigItem(
 			keyName = "antelopesEnabled",
-			name = "Enabled",
+			name = "Overlay Enabled",
 			description = "Enable antelopes overlay",
 			section = antelopesSection,
 			position = 0
@@ -206,6 +206,18 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 	default Color antelopesRespawnColour()
 	{
 		return new Color(0, 255, 255);
+	}
+
+	@ConfigItem(
+			keyName = "antelopesRemoveTease",
+			name = "Remove Tease",
+			description = "Removes the Tease option on already trapped antelopes",
+			section = antelopesSection,
+			position = 6
+	)
+	default boolean antelopesRemoveTease()
+	{
+		return true;
 	}
 
 	@ConfigSection(

@@ -11,6 +11,7 @@ import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayUtil;
+import net.runelite.client.ui.overlay.components.ProgressPieComponent;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -151,8 +152,7 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
                     continue;
                 }
 
-                renderTile(graphics, npc.getLocation(), config.antelopesRespawnColour());
-                renderText(graphics, npc.getLocation(), String.valueOf(ticksLeft), config.antelopesRespawnColour());
+                renderRespawn(graphics, npc.getLocation(), config.antelopesRespawnColour(), 2, (double)ticksLeft / MoonlightAntelopeHuntingPlugin.ANTELOPE_RESPAWN_TIME);
             }
         }
 
@@ -200,17 +200,27 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
         OverlayUtil.renderHoverableArea(graphics, hull, mousePosition, color, borderColour, borderColour.darker());
     }
 
-    private void renderTile(Graphics2D graphics, WorldPoint worldPoint, Color color)
+    private void renderRespawn(Graphics2D graphics, WorldPoint worldPoint, Color color, int size, double progress)
     {
         var localPoint = LocalPoint.fromWorld(client, worldPoint);
         if (localPoint == null)
             return;
 
-        var tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
+        int offset = (size - 1) * Perspective.LOCAL_HALF_TILE_SIZE;
+        var centeredLocalPoint = new LocalPoint(localPoint.getX() + offset, localPoint.getY() + offset, localPoint.getWorldView());
+
+        var tilePoly = Perspective.getCanvasTileAreaPoly(client, centeredLocalPoint, size);
         if (tilePoly == null)
             return;
 
         OverlayUtil.renderPolygon(graphics, tilePoly, color);
+
+        var pie = new ProgressPieComponent();
+        pie.setPosition(Perspective.localToCanvas(client, centeredLocalPoint, worldPoint.getPlane()));
+        pie.setProgress(progress);
+        pie.setBorderColor(color.darker());
+        pie.setFill(color);
+        pie.render(graphics);
     }
 
     private void renderFilledTile(Graphics2D graphics, WorldPoint worldPoint, Color color)

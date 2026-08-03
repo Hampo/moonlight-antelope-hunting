@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.NpcID;
@@ -29,7 +30,7 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	private static final WorldPoint CENTER = new WorldPoint(1561, 9421, 0);
 	private static final int DISTANCE = 10;
 
-	private static final int ANTELOPE_RESPAWN_TIME = 45;
+	public static final int ANTELOPE_RESPAWN_TIME = 45;
 
 	private static final Set<Integer> LOG_IDS = Set.of(
 			net.runelite.api.gameval.ItemID.LOGS,
@@ -64,6 +65,7 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	@Getter
 	private final List<DeadNPC> deadNPCs = new ArrayList<>();
 
+	private final Set<Integer> fallingNPCs = new HashSet<>();
 	private final Map<Integer, WorldPoint> spawnLocations = new HashMap<>();
 
 	@Getter
@@ -101,7 +103,6 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 
 			activeNPCs.clear();
 			deadNPCs.clear();
-			spawnLocations.clear();
 		}
 	}
 
@@ -152,22 +153,47 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 			return;
 
 		activeNPCs.add(npc);
-		spawnLocations.putIfAbsent(npc.getIndex(), npc.getWorldLocation());
+		var index = npc.getIndex();
+		spawnLocations.putIfAbsent(index, npc.getWorldLocation());
+
+		deadNPCs.removeIf(deadNPC -> deadNPC.getIndex() == index);
+	}
+
+	@Subscribe
+	public void onAnimationChanged(AnimationChanged event)
+	{
+		if (!(event.getActor() instanceof NPC))
+			return;
+
+		NPC npc = (NPC) event.getActor();
+		if (npc.getId() != NpcID.MOONLIGHT_ANTELOPE)
+			return;
+
+		if (npc.getAnimation() != AnimationID.UNICORN_REWORK_PITFALL_DEATH)
+			return;
+
+		fallingNPCs.add(npc.getIndex());
 	}
 
 	@Subscribe
 	public void onNpcDespawned(NpcDespawned event) {
 		NPC npc = event.getNpc();
-		if (npc.getId() == NpcID.MOONLIGHT_ANTELOPE) {
-			activeNPCs.remove(npc);
+		if (npc.getId() != NpcID.MOONLIGHT_ANTELOPE)
+			return;
 
-			var spawnTile = spawnLocations.get(npc.getIndex());
-			if (spawnTile == null)
-				spawnTile = npc.getWorldLocation();
-			spawnLocations.remove(npc.getIndex());
+		activeNPCs.remove(npc);
 
-			deadNPCs.add(new DeadNPC(spawnTile, client.getTickCount() + ANTELOPE_RESPAWN_TIME));
-		}
+		var index = npc.getIndex();
+		if (!fallingNPCs.contains(index))
+			return;
+		fallingNPCs.remove(index);
+
+		var spawnTile = spawnLocations.get(npc.getIndex());
+		if (spawnTile == null)
+			return;
+		spawnLocations.remove(npc.getIndex());
+
+		deadNPCs.add(new DeadNPC(index, spawnTile, client.getTickCount() + ANTELOPE_RESPAWN_TIME));
 	}
 
 	@Subscribe

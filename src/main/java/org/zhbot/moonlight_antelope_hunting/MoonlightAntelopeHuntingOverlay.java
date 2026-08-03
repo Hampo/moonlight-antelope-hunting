@@ -158,7 +158,7 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
 
         if (config.invalidTilesEnabled())
             for (var tile : INVALID_TILES)
-                renderTile(graphics, tile, config.invalidTilesColour());
+                renderFilledTile(graphics, tile, config.invalidTilesColour());
 
         return null;
     }
@@ -211,6 +211,20 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
             return;
 
         OverlayUtil.renderPolygon(graphics, tilePoly, color);
+    }
+
+    private void renderFilledTile(Graphics2D graphics, WorldPoint worldPoint, Color color)
+    {
+        var localPoint = LocalPoint.fromWorld(client, worldPoint);
+        if (localPoint == null)
+            return;
+
+        var tilePoly = Perspective.getCanvasTilePoly(client, localPoint);
+        if (tilePoly == null)
+            return;
+
+        graphics.setColor(color);
+        graphics.fill(tilePoly);
     }
 
     private void renderTile(Graphics2D graphics, NPC npc, Color color)

@@ -237,6 +237,6 @@ public interface MoonlightAntelopeHuntingConfig extends Config
 	)
 	default Color invalidTilesColour()
 	{
-		return new Color(255, 0, 0);
+		return new Color(255, 0, 0, 50);
 	}
 }

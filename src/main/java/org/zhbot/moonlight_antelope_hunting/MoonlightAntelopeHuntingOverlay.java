@@ -25,14 +25,6 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
             ObjectID.HUNTING_PITFALL_25, VarbitID.HUNT_PITFALL_STATE25
     );
 
-    private static final Set<Integer> LOG_IDS = Set.of(
-            ItemID.OAK_LOGS,
-            ItemID.WILLOW_LOGS,
-            ItemID.MAPLE_LOGS,
-            ItemID.YEW_LOGS,
-            ItemID.MAGIC_LOGS
-    );
-
     private static final Set<WorldPoint> INVALID_TILES = Set.of(
             new WorldPoint(1555, 9421, 0),
             new WorldPoint(1556, 9421, 0),
@@ -85,7 +77,7 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
         if (inventory == null)
             return null;
 
-        var logCount = inventory.count(ItemID.LOGS);
+        var logCount = plugin.getLogCounts().getOrDefault(ItemID.LOGS, 0);
 
         if (config.rootsEnabled())
         {
@@ -104,8 +96,9 @@ public class MoonlightAntelopeHuntingOverlay extends Overlay {
             }
         }
 
-        for (var logId : LOG_IDS)
-            logCount += inventory.count(logId);
+        logCount = 0;
+        for (var count : plugin.getLogCounts().values())
+            logCount += count;
 
         if (config.pitfallEnabled())
         {

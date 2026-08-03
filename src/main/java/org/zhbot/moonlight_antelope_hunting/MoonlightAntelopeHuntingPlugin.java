@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.api.gameval.InventoryID;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.NpcID;
 import net.runelite.api.gameval.ObjectID;
 import net.runelite.client.config.ConfigManager;
@@ -16,10 +18,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @PluginDescriptor(
@@ -31,6 +30,15 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 	private static final int DISTANCE = 10;
 
 	private static final int ANTELOPE_RESPAWN_TIME = 45;
+
+	private static final Set<Integer> LOG_IDS = Set.of(
+			net.runelite.api.gameval.ItemID.LOGS,
+			net.runelite.api.gameval.ItemID.OAK_LOGS,
+			net.runelite.api.gameval.ItemID.WILLOW_LOGS,
+			net.runelite.api.gameval.ItemID.MAPLE_LOGS,
+			net.runelite.api.gameval.ItemID.YEW_LOGS,
+			ItemID.MAGIC_LOGS
+	);
 
 	@Inject
 	private Client client;
@@ -58,6 +66,9 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 
 	private final Map<Integer, WorldPoint> spawnLocations = new HashMap<>();
 
+	@Getter
+	private final Map<Integer, Integer> logCounts = new HashMap<>();
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -75,6 +86,8 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 		activeNPCs.clear();
 		deadNPCs.clear();
 		spawnLocations.clear();
+
+		logCounts.clear();
 	}
 
 	@Subscribe
@@ -155,6 +168,18 @@ public class MoonlightAntelopeHuntingPlugin extends Plugin
 
 			deadNPCs.add(new DeadNPC(spawnTile, client.getTickCount() + ANTELOPE_RESPAWN_TIME));
 		}
+	}
+
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		if (event.getContainerId() != InventoryID.INV)
+			return;
+
+		var inventory = event.getItemContainer();
+
+		for (var logId : LOG_IDS)
+			logCounts.put(logId, inventory.count(logId));
 	}
 
 	@Provides
